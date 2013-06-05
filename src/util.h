@@ -31,8 +31,16 @@
 typedef long long  int64;
 typedef unsigned long long  uint64;
 
-static const int64 COIN = 100000000;
-static const int64 CENT = 1000000;
+static const int64 COIN = 1000000000000000000; // 1E18
+static const int64 MILLI_COIN = 1000000000000000; // 1E15
+static const int64 MICRO_COIN = 1000000000000; // 1E12
+static const int64 NANO_COIN = 1000000000; // 1E9
+static const int64 PICO_COIN = 1000000; // 1E6
+static const int64 FEMTO_COIN = 1000; // 1E3
+static const int64 ATTO_COIN = 1;
+// Maximal block reward is 500 nano-OTC. Maximal Bitcoin block reward is 50 BTC,
+// so 10 nano-OTC is equivalent to 1 BTC and 100 pico-OTC is equivalent to Bitcoin cent.
+static const int64 SMALL_TRANSACTION_TRESHOLD = 100 * PICO_COIN;
 
 #define loop                for (;;)
 #define BEGIN(a)            ((char*)&(a))
