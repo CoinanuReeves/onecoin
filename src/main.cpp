@@ -2677,10 +2677,10 @@ bool LoadBlockIndex()
 {
     if (fTestNet)
     {
-        pchMessageStart[0] = 0x0b;
-        pchMessageStart[1] = 0x11;
-        pchMessageStart[2] = 0x09;
-        pchMessageStart[3] = 0x07;
+        pchMessageStart[0] = 0xf8; // Onecoin: add 0x1 to mainnet's values
+        pchMessageStart[1] = 0xbe;
+        pchMessageStart[2] = 0xb5;
+        pchMessageStart[3] = 0xdb;
         hashGenesisBlock = uint256("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943");
     }
 
@@ -3014,7 +3014,7 @@ bool static AlreadyHave(const CInv& inv)
 // The message start string is designed to be unlikely to occur in normal data.
 // The characters are rarely used upper ASCII, not valid as UTF-8, and produce
 // a large 4-byte int at any alignment.
-unsigned char pchMessageStart[4] = { 0xf9, 0xbe, 0xb4, 0xd9 };
+unsigned char pchMessageStart[4] = { 0xf7, 0xbd, 0xb4, 0xda }; // Onecoin: apply difference to Bitcoin's values: -0x02, -0x01, 0x0, 0x1
 
 
 void static ProcessGetData(CNode* pfrom)
