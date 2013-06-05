@@ -1063,14 +1063,14 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
 {
     int64 nSubsidy = 500 * NANO_COIN;
 
-    // Subsidy is cut in half every 210000 blocks, which will occur approximately every 4 years
+    // Subsidy is cut in half every 1000000 blocks, which will occur approximately every 3.8 years
     nSubsidy >>= (nHeight / 1000000);
 
     return nSubsidy + nFees;
 }
 
 static const int64 nTargetTimespan = 14 * 24 * 60 * 60; // two weeks
-static const int64 nTargetSpacing = 10 * 60;
+static const int64 nTargetSpacing = 2 * 60; // Onecoin: 2 minutes block target
 static const int64 nInterval = nTargetTimespan / nTargetSpacing;
 
 //
@@ -1856,7 +1856,7 @@ bool SetBestChain(CValidationState &state, CBlockIndex* pindexNew)
     }
 
     // Update best block in wallet (so we can detect restored wallets)
-    if ((pindexNew->nHeight % 20160) == 0 || (!fIsInitialDownload && (pindexNew->nHeight % 144) == 0))
+    if ((pindexNew->nHeight % 20160) == 0 || (!fIsInitialDownload && (pindexNew->nHeight % 720) == 0))
     {
         const CBlockLocator locator(pindexNew);
         ::SetBestChain(locator);
@@ -4285,7 +4285,7 @@ CBlockTemplate* CreateNewBlock(CReserveKey& reservekey)
             // Prioritize by fee once past the priority size or we run out of high-priority
             // transactions:
             if (!fSortedByFee &&
-                ((nBlockSize + nTxSize >= nBlockPrioritySize) || (dPriority < (10 * NANO_COIN) * 144 / 250)))
+                ((nBlockSize + nTxSize >= nBlockPrioritySize) || (dPriority < (10 * NANO_COIN) * 720 / 250)))
             {
                 fSortedByFee = true;
                 comparer = TxPriorityCompare(fSortedByFee);
