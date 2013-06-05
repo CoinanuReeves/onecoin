@@ -272,9 +272,9 @@ class CBitcoinAddress : public CBase58Data
 public:
     enum
     {
-        PUBKEY_ADDRESS = 0,
+        PUBKEY_ADDRESS = 115, // Onecoin: addresses start with o
         SCRIPT_ADDRESS = 5,
-        PUBKEY_ADDRESS_TEST = 111,
+        PUBKEY_ADDRESS_TEST = 117, // Onecoin: testnet addresses start with p
         SCRIPT_ADDRESS_TEST = 196,
     };
 
