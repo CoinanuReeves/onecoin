@@ -49,6 +49,11 @@ static const int64 SMALL_TRANSACTION_TRESHOLD = 100 * PICO_COIN;
 #define UEND(a)             ((unsigned char*)&((&(a))[1]))
 #define ARRAYLEN(array)     (sizeof(array)/sizeof((array)[0]))
 
+#define UVOIDBEGIN(a)        ((void*)&(a))
+#define CVOIDBEGIN(a)        ((const void*)&(a))
+#define UINTBEGIN(a)         ((uint32_t*)&(a))
+#define CUINTBEGIN(a)        ((const uint32_t*)&(a))
+
 #ifndef PRI64d
 #if defined(_MSC_VER) || defined(__MSVCRT__)
 #define PRI64d  "I64d"

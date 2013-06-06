@@ -33,7 +33,8 @@ unsigned int nTransactionsUpdated = 0;
 map<uint256, CBlockIndex*> mapBlockIndex;
 std::vector<CBlockIndex*> vBlockIndexByHeight;
 uint256 hashGenesisBlock("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-static CBigNum bnProofOfWorkLimit(~uint256(0) >> 32);
+static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // Litecoin: starting difficulty is 1 / 2^12
+int64 nChainStartTime = 1367872000;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 nBestChainWork = 0;
@@ -1067,6 +1068,34 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     nSubsidy >>= (nHeight / 1000000);
 
     return nSubsidy + nFees;
+}
+
+// yacoin: increasing Nfactor gradually
+const unsigned char minNfactor = 4;
+const unsigned char maxNfactor = 30;
+
+unsigned char GetNfactor(int64 nTimestamp) {
+    int l = 0;
+
+    if (nTimestamp <= nChainStartTime)
+        return 4;
+
+    int64 s = nTimestamp - nChainStartTime;
+    while ((s >> 1) > 3) {
+      l += 1;
+      s >>= 1;
+    }
+
+    s &= 3;
+
+    int n = (l * 170 + s * 25 - 2320) / 100;
+
+    if (n < 0) n = 0;
+
+    unsigned char N = (unsigned char)n;
+    //printf("GetNfactor: %d -> %d %d : %d / %d\n", nTimestamp - nChainStartTime, l, s, n, min(max(N, minNfactor), maxNfactor));
+
+    return min(max(N, minNfactor), maxNfactor);
 }
 
 static const int64 nTargetTimespan = 14 * 24 * 60 * 60; // two weeks
@@ -2681,7 +2710,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xbe;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xdb;
-        hashGenesisBlock = uint256("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943");
+        hashGenesisBlock = uint256("00000fdf63a517f8266f704dfc0c9c7fc601fabeea1bca27a876a6fa81355306");
     }
 
     //
@@ -2706,15 +2735,8 @@ bool InitBlockIndex() {
 
     // Only add the genesis block if not reindexing (in which case we reuse the one already on disk)
     if (!fReindex) {
-        // Genesis Block:
-        // CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
-        //   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
-        //     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
-        //     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
-        //   vMerkleTree: 4a5e1e
-
         // Genesis block
-        const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+        const char* pszTimestamp = "TEST BLOCKCHAIN";
         CTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
@@ -2726,24 +2748,51 @@ bool InitBlockIndex() {
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1231006505;
-        block.nBits    = 0x1d00ffff;
+        block.nTime    = nChainStartTime;
+        block.nBits    = bnProofOfWorkLimit.GetCompact();
         block.nNonce   = 2083236893;
 
         if (fTestNet)
         {
-            block.nTime    = 1296688602;
-            block.nNonce   = 414098458;
+            block.nTime    = 1370517766;
+            block.nNonce   = 27490;
         }
 
         //// debug print
-        uint256 hash = block.GetHash();
-        printf("%s\n", hash.ToString().c_str());
-        printf("%s\n", hashGenesisBlock.ToString().c_str());
-        printf("%s\n", block.hashMerkleRoot.ToString().c_str());
-        assert(block.hashMerkleRoot == uint256("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
         block.print();
-        assert(hash == hashGenesisBlock);
+        assert(block.hashMerkleRoot == uint256("6ca5eb189dc8c75862159f642115ecf944c34d43ea171eb4a0ba2f7f4eadc7d5"));
+
+        if (false && block.GetHash() != hashGenesisBlock)
+        {
+            unsigned int max_nonce = 0xffff0000;
+            block_header res_header;
+            uint256 result;
+            unsigned int nHashesDone = 0;
+            unsigned int nNonceFound;
+            uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
+            printf("hashTarget = %s\n", hashTarget.ToString().c_str());
+
+            do {
+                nNonceFound = scanhash_scrypt(
+                            (block_header *)&block.nVersion,
+                            max_nonce,
+                            nHashesDone,
+                            UBEGIN(result),
+                            &res_header,
+                            GetNfactor(block.nTime)
+                );
+                if ((unsigned int) -1 == nNonceFound || result > hashTarget) {
+                    printf("Hashes done: %d; result = %s...\n", nHashesDone, result.ToString().substr(0, 20).c_str());
+                    block.nTime++;
+                    continue;
+                }
+            } while(result > hashTarget);
+
+            block.nNonce = nNonceFound;
+            printf("\nHash found:\n  block.GetHash = %s\n  nNonce = %d\n  nTime = %d\n", block.GetHash().ToString().c_str(), nNonceFound, block.nTime);
+        }
+
+        assert(block.GetHash() == hashGenesisBlock);
 
         // Start new block file
         try {
@@ -4040,41 +4089,6 @@ void SHA256Transform(void* pstate, void* pinput, const void* pinit)
         ((uint32_t*)pstate)[i] = ctx.h[i];
 }
 
-//
-// ScanHash scans nonces looking for a hash with at least some zero bits.
-// It operates on big endian data.  Caller does the byte reversing.
-// All input buffers are 16-byte aligned.  nNonce is usually preserved
-// between calls, but periodically or if nNonce is 0xffff0000 or above,
-// the block is rebuilt and nNonce starts over at zero.
-//
-unsigned int static ScanHash_CryptoPP(char* pmidstate, char* pdata, char* phash1, char* phash, unsigned int& nHashesDone)
-{
-    unsigned int& nNonce = *(unsigned int*)(pdata + 12);
-    for (;;)
-    {
-        // Crypto++ SHA256
-        // Hash pdata using pmidstate as the starting state into
-        // pre-formatted buffer phash1, then hash phash1 into phash
-        nNonce++;
-        SHA256Transform(phash1, pdata, pmidstate);
-        SHA256Transform(phash, phash1, pSHA256InitState);
-
-        // Return the nonce if the hash has at least some zero bits,
-        // caller will check if it has enough to reach the target
-        if (((unsigned short*)phash)[14] == 0)
-            return nNonce;
-
-        // If nothing found after trying for a while, return -1
-        if ((nNonce & 0xffff) == 0)
-        {
-            nHashesDone = 0xffff+1;
-            return (unsigned int) -1;
-        }
-        if ((nNonce & 0xfff) == 0)
-            boost::this_thread::interruption_point();
-    }
-}
-
 // Some explaining would be appreciated
 class COrphan
 {
@@ -4520,28 +4534,33 @@ void static BitcoinMiner(CWallet *pwallet)
         //
         int64 nStart = GetTime();
         uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
-        uint256 hashbuf[2];
-        uint256& hash = *alignup<16>(hashbuf);
+
+        unsigned int max_nonce = 0xffff0000;
+        block_header res_header;
+        uint256 result;
+
         loop
         {
             unsigned int nHashesDone = 0;
             unsigned int nNonceFound;
 
-            // Crypto++ SHA256
-            nNonceFound = ScanHash_CryptoPP(pmidstate, pdata + 64, phash1,
-                                            (char*)&hash, nHashesDone);
+            nNonceFound = scanhash_scrypt(
+                        (block_header *)&pblock->nVersion,
+                        max_nonce,
+                        nHashesDone,
+                        UBEGIN(result),
+                        &res_header,
+                        GetNfactor(pblock->nTime)
+            );
 
             // Check if something found
             if (nNonceFound != (unsigned int) -1)
             {
-                for (unsigned int i = 0; i < sizeof(hash)/4; i++)
-                    ((unsigned int*)&hash)[i] = ByteReverse(((unsigned int*)&hash)[i]);
-
-                if (hash <= hashTarget)
+                if (result <= hashTarget)
                 {
                     // Found a solution
-                    pblock->nNonce = ByteReverse(nNonceFound);
-                    assert(hash == pblock->GetHash());
+                    pblock->nNonce = nNonceFound;
+                    assert(result == pblock->GetHash());
 
                     SetThreadPriority(THREAD_PRIORITY_NORMAL);
                     CheckWork(pblock, *pwalletMain, reservekey);

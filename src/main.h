@@ -9,6 +9,7 @@
 #include "sync.h"
 #include "net.h"
 #include "script.h"
+#include "scrypt_mine.h"
 
 #include <list>
 
@@ -183,6 +184,8 @@ bool VerifySignature(const CCoins& txFrom, const CTransaction& txTo, unsigned in
 bool AbortNode(const std::string &msg);
 
 
+// yacoin: calculate Nfactor using timestamp
+unsigned char GetNfactor(int64 nTimestamp);
 
 
 
@@ -1301,7 +1304,9 @@ public:
 
     uint256 GetHash() const
     {
-        return Hash(BEGIN(nVersion), END(nNonce));
+        uint256 thash;
+        scrypt_hash(CVOIDBEGIN(nVersion), sizeof(block_header), UINTBEGIN(thash), GetNfactor(nTime));
+        return thash;
     }
 
     int64 GetBlockTime() const
