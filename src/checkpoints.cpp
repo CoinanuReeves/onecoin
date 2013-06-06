@@ -76,6 +76,7 @@ namespace Checkpoints
 
     bool CheckBlock(int nHeight, const uint256& hash)
     {
+        return true; // Disable checkpoint checks for now
         if (!fEnabled)
             return true;
 
@@ -88,6 +89,7 @@ namespace Checkpoints
 
     // Guess how far we are in the verification process at the given block index
     double GuessVerificationProgress(CBlockIndex *pindex) {
+        return 0.0; // Disable checkpoint checks for now
         if (pindex==NULL)
             return 0.0;
 
@@ -119,6 +121,7 @@ namespace Checkpoints
 
     int GetTotalBlocksEstimate()
     {
+        return 0; // Disable checkpoint checks for now
         if (!fEnabled)
             return 0;
 
@@ -129,6 +132,7 @@ namespace Checkpoints
 
     CBlockIndex* GetLastCheckpoint(const std::map<uint256, CBlockIndex*>& mapBlockIndex)
     {
+        return NULL; // Disable checkpoint checks for now
         if (!fEnabled)
             return NULL;
 
