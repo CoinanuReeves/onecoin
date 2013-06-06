@@ -213,7 +213,7 @@ void ThreadIRCSeed2(void* parg)
         return;
 
     // ... or if IRC is not enabled.
-    if (!GetBoolArg("-irc", false))
+    if (!GetBoolArg("-irc", true))
         return;
 
     printf("ThreadIRCSeed trying to connect...\n");
@@ -224,9 +224,9 @@ void ThreadIRCSeed2(void* parg)
 
     while (true)
     {
-        CService addrConnect("92.243.23.21", 6667); // irc.lfnet.org
+        CService addrConnect("66.225.225.66", 6667); // irc.quakenet.org
 
-        CService addrIRC("irc.lfnet.org", 6667, true);
+        CService addrIRC("irc.quakenet.org", 6667, true);
         if (addrIRC.IsValid())
             addrConnect = addrIRC;
 
@@ -302,13 +302,14 @@ void ThreadIRCSeed2(void* parg)
         }
 
         if (fTestNet) {
-            Send(hSocket, "JOIN #bitcoinTEST3\r");
-            Send(hSocket, "WHO #bitcoinTEST3\r");
+            Send(hSocket, "JOIN #onecoinTEST3\r");
+            Send(hSocket, "WHO #onecoinTEST3\r");
         } else {
             // randomly join #bitcoin00-#bitcoin99
-            int channel_number = GetRandInt(100);
-            Send(hSocket, strprintf("JOIN #bitcoin%02d\r", channel_number).c_str());
-            Send(hSocket, strprintf("WHO #bitcoin%02d\r", channel_number).c_str());
+            // int channel_number = GetRandInt(100);
+            int channel_number = 0;
+            Send(hSocket, strprintf("JOIN #onecoin%02d\r", channel_number).c_str());
+            Send(hSocket, strprintf("WHO #onecoin%02d\r", channel_number).c_str());
         }
 
         int64 nStart = GetTime();
