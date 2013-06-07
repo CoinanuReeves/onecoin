@@ -93,18 +93,17 @@ void RPCTypeCheck(const Object& o,
 
 int64 AmountFromValue(const Value& value)
 {
-    double dAmount = value.get_real();
-    if (dAmount <= 0.0 || dAmount > 1.0)
-        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
-    int64 nAmount = roundint64(dAmount * COIN);
-    if (!MoneyRange(nAmount))
+    string strAmount = value.get_str();
+    int64 nAmount;
+    bool fSuccess = ParseMoney(strAmount, nAmount);
+    if (!fSuccess || !MoneyRange(nAmount))
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
     return nAmount;
 }
 
 Value ValueFromAmount(int64 amount)
 {
-    return (double)amount / (double)COIN;
+    return FormatMoney(amount, false);
 }
 
 std::string HexBits(unsigned int nBits)
@@ -1158,8 +1157,8 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "getaddednodeinfo"       && n > 0) ConvertTo<bool>(params[0]);
     if (strMethod == "setgenerate"            && n > 0) ConvertTo<bool>(params[0]);
     if (strMethod == "setgenerate"            && n > 1) ConvertTo<boost::int64_t>(params[1]);
-    if (strMethod == "sendtoaddress"          && n > 1) ConvertTo<double>(params[1]);
-    if (strMethod == "settxfee"               && n > 0) ConvertTo<double>(params[0]);
+    // if (strMethod == "sendtoaddress"          && n > 1) ConvertTo<double>(params[1]);
+    // if (strMethod == "settxfee"               && n > 0) ConvertTo<double>(params[0]);
     if (strMethod == "getreceivedbyaddress"   && n > 1) ConvertTo<boost::int64_t>(params[1]);
     if (strMethod == "getreceivedbyaccount"   && n > 1) ConvertTo<boost::int64_t>(params[1]);
     if (strMethod == "listreceivedbyaddress"  && n > 0) ConvertTo<boost::int64_t>(params[0]);
@@ -1168,9 +1167,9 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "listreceivedbyaccount"  && n > 1) ConvertTo<bool>(params[1]);
     if (strMethod == "getbalance"             && n > 1) ConvertTo<boost::int64_t>(params[1]);
     if (strMethod == "getblockhash"           && n > 0) ConvertTo<boost::int64_t>(params[0]);
-    if (strMethod == "move"                   && n > 2) ConvertTo<double>(params[2]);
+    // if (strMethod == "move"                   && n > 2) ConvertTo<double>(params[2]);
     if (strMethod == "move"                   && n > 3) ConvertTo<boost::int64_t>(params[3]);
-    if (strMethod == "sendfrom"               && n > 2) ConvertTo<double>(params[2]);
+    // if (strMethod == "sendfrom"               && n > 2) ConvertTo<double>(params[2]);
     if (strMethod == "sendfrom"               && n > 3) ConvertTo<boost::int64_t>(params[3]);
     if (strMethod == "listtransactions"       && n > 1) ConvertTo<boost::int64_t>(params[1]);
     if (strMethod == "listtransactions"       && n > 2) ConvertTo<boost::int64_t>(params[2]);
