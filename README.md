@@ -14,7 +14,7 @@ So far, these are the differences to Bitcoin:
 * Maximal block reward: 500 nano-OTC.
 * The first 1000 blocks will have no reward, then the reward will 
   gradually grow up every 500 blocks to 500 nano-OTC during first 
-  25500 blocks, and after that default rules will apply. This will
+  10500 blocks, and after that default rules will apply. This will
   ensure that the launch is fair. 
 * TX fee: 10 pico-OTC.
 * Subsidy is cut in half every 1000000 blocks, which will occur 

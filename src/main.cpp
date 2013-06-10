@@ -1073,17 +1073,17 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     {
         nSubsidy = 0;
     }
-    else if (nHeight < 25500)
+    else if (nHeight < 10500)
     {
         int nSubsidyModifier = (nHeight - 500) / 500;
-        nSubsidy = nSubsidy * nSubsidyModifier / 50;
+        nSubsidy = nSubsidy * nSubsidyModifier / 20;
     }
     else
     {
-        // Total subsidy produced by first 25500 blocks is equivalent to 12250 blocks
+        // Total subsidy produced by first 10500 blocks is equivalent to 4750 blocks
         // getting the full reward.
         // Subsidy is cut in half every 1000000 blocks, which will occur approximately every 4.75 years
-        nSubsidy >>= ((nHeight - 25500 + 12250) / 1000000);
+        nSubsidy >>= ((nHeight - 10500 + 4750) / 1000000);
     }
 
     return nSubsidy + nFees;
