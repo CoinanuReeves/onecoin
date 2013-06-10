@@ -34,7 +34,7 @@ map<uint256, CBlockIndex*> mapBlockIndex;
 std::vector<CBlockIndex*> vBlockIndexByHeight;
 uint256 hashGenesisBlock("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // Litecoin: starting difficulty is 1 / 2^12
-int64 nChainStartTime = 1367872000;
+int64 nChainStartTime = 1368555052;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 nBestChainWork = 0;
@@ -1065,8 +1065,26 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
 {
     int64 nSubsidy = 500 * NANO_COIN;
 
-    // Subsidy is cut in half every 1000000 blocks, which will occur approximately every 3.8 years
-    nSubsidy >>= (nHeight / 1000000);
+    // Blocks 0-999 will get no reward.
+    // Blocks 1000-1499 will receive 10 nano-OTC, 1500-1999 - 20 nano-OTC and so on,
+    // the subsidy increasing by 10 nano-OTC every 500 blocks, until block 25500,
+    // which will receive the full reward of 500 nano-OTC.
+    if (nHeight < 1000)
+    {
+        nSubsidy = 0;
+    }
+    else if (nHeight < 25500)
+    {
+        int nSubsidyModifier = (nHeight - 500) / 500;
+        nSubsidy = nSubsidy * nSubsidyModifier / 50;
+    }
+    else
+    {
+        // Total subsidy produced by first 25500 blocks is equivalent to 12250 blocks
+        // getting the full reward.
+        // Subsidy is cut in half every 1000000 blocks, which will occur approximately every 4.75 years
+        nSubsidy >>= ((nHeight - 25500 + 12250) / 1000000);
+    }
 
     return nSubsidy + nFees;
 }
@@ -2669,7 +2687,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xbe;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xdb;
-        hashGenesisBlock = uint256("00000fdf63a517f8266f704dfc0c9c7fc601fabeea1bca27a876a6fa81355306");
+        hashGenesisBlock = uint256("00000098b82285c5f23d21dd9df807025de4894feff0477d29748c2dc7f4dee6");
     }
 
     //
@@ -2701,7 +2719,7 @@ bool InitBlockIndex() {
         txNew.vout.resize(1);
         txNew.vin[0].scriptSig = CScript() << 486604799 << CBigNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = GetBlockValue(0, 0);
-        txNew.vout[0].scriptPubKey = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
+        txNew.vout[0].scriptPubKey = CScript() << ParseHex("04D0FA33F5CB768C5C60FA647E651EABB984C9D4D339552E8EE261C26A21457BF518A708D51FF9F14D895CDCB50FCFCE4C568FCCA9881F4ACB191EC4AF03C7A471") << OP_CHECKSIG;
         CBlock block;
         block.vtx.push_back(txNew);
         block.hashPrevBlock = 0;
@@ -2713,13 +2731,13 @@ bool InitBlockIndex() {
 
         if (fTestNet)
         {
-            block.nTime    = 1370517766;
-            block.nNonce   = 27490;
+            block.nTime    = 1370872392;
+            block.nNonce   = 8527;
         }
 
         //// debug print
         block.print();
-        assert(block.hashMerkleRoot == uint256("6ca5eb189dc8c75862159f642115ecf944c34d43ea171eb4a0ba2f7f4eadc7d5"));
+        assert(block.hashMerkleRoot == uint256("267aee4385dba4b823646024fc8c424a2ee8bd72d77a9f01c821adca5c7be970"));
 
         if (false && block.GetHash() != hashGenesisBlock)
         {
