@@ -14,6 +14,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <cmath>
 
 using namespace std;
 using namespace boost;
@@ -34,7 +35,7 @@ map<uint256, CBlockIndex*> mapBlockIndex;
 std::vector<CBlockIndex*> vBlockIndexByHeight;
 uint256 hashGenesisBlock("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // Litecoin: starting difficulty is 1 / 2^12
-int64 nChainStartTime = 1368555052;
+int64 nChainStartTime = 1370872394;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 nBestChainWork = 0;
@@ -1089,32 +1090,14 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     return nSubsidy + nFees;
 }
 
-// yacoin: increasing Nfactor gradually
-const unsigned char minNfactor = 4;
-const unsigned char maxNfactor = 30;
-
-unsigned char GetNfactor(int64 nTimestamp) {
-    int l = 0;
-
-    if (nTimestamp <= nChainStartTime)
-        return 4;
-
-    int64 s = nTimestamp - nChainStartTime;
-    while ((s >> 1) > 3) {
-      l += 1;
-      s >>= 1;
-    }
-
-    s &= 3;
-
-    int n = (l * 170 + s * 25 - 2320) / 100;
-
-    if (n < 0) n = 0;
-
-    unsigned char N = (unsigned char)n;
-    //printf("GetNfactor: %d -> %d %d : %d / %d\n", nTimestamp - nChainStartTime, l, s, n, min(max(N, minNfactor), maxNfactor));
-
-    return min(max(N, minNfactor), maxNfactor);
+// Onecoin: increasing Nfactor gradually
+unsigned char GetNfactor(int64 nTimestamp)
+{
+    int64 delta = nTimestamp - nChainStartTime;
+    if (delta < 0)
+        return 6;
+    double days = (double)delta / 24 / 60 / 60;
+    return floor(log10(days + 100) * 10 - 14);
 }
 
 static const int64 nTargetTimespan = 7 * 24 * 60 * 60;  // one week
@@ -2687,7 +2670,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xbe;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xdb;
-        hashGenesisBlock = uint256("00000098b82285c5f23d21dd9df807025de4894feff0477d29748c2dc7f4dee6");
+        hashGenesisBlock = uint256("00000b65b3df6f18eb3424309ee4b1a7de0cdfc7f243ac95ab6b6618a401828b");
     }
 
     //
@@ -2731,8 +2714,8 @@ bool InitBlockIndex() {
 
         if (fTestNet)
         {
-            block.nTime    = 1370872392;
-            block.nNonce   = 8527;
+            block.nTime    = 1370872416;
+            block.nNonce   = 16531;
         }
 
         //// debug print
