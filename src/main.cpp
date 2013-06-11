@@ -39,6 +39,7 @@ int64 nChainStartTime = 1370872394;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 nBestChainWork = 0;
+int64 nBestHeightTime = 0;   // WM - Keep track of timestamp of block at best height.
 uint256 nBestInvalidWork = 0;
 uint256 hashBestChain = 0;
 CBlockIndex* pindexBest = NULL;
@@ -1857,6 +1858,7 @@ bool SetBestChain(CValidationState &state, CBlockIndex* pindexNew)
     pblockindexFBBHLast = NULL;
     nBestHeight = pindexBest->nHeight;
     nBestChainWork = pindexNew->nChainWork;
+    nBestHeightTime = pindexBest->GetBlockTime();    // WM - Record timestamp of current best block.
     nTimeBestReceived = GetTime();
     nTransactionsUpdated++;
     printf("SetBestChain: new best=%s  height=%d  log2_work=%.8g  tx=%lu  date=%s progress=%f\n",
@@ -2561,6 +2563,7 @@ bool static LoadBlockIndexDB()
     hashBestChain = pindexBest->GetBlockHash();
     nBestHeight = pindexBest->nHeight;
     nBestChainWork = pindexBest->nChainWork;
+    nBestHeightTime = pindexBest->GetBlockTime();    // WM - Record timestamp of current best block.
 
     // register best chain
     CBlockIndex *pindex = pindexBest;
