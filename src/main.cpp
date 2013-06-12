@@ -1098,7 +1098,10 @@ unsigned char GetNfactor(int64 nTimestamp)
     if (delta < 0)
         return 6;
     double days = (double)delta / 24 / 60 / 60;
-    return floor(log10(days + 100) * 10 - 14);
+    unsigned char Nfactor = floor(log10(days + 100) * 10 - 14);
+    if (Nfactor > 30)
+        return 30;
+    return Nfactor;
 }
 
 static const int64 nTargetTimespan = 7 * 24 * 60 * 60;  // one week
