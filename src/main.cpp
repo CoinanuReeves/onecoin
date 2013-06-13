@@ -33,9 +33,9 @@ unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
 std::vector<CBlockIndex*> vBlockIndexByHeight;
-uint256 hashGenesisBlock("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
+uint256 hashGenesisBlock("000001b083ff71bc4859002ca1ecac4a57b72380b2f337e3bd9dd88417b567ac");
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // Litecoin: starting difficulty is 1 / 2^12
-int64 nChainStartTime = 1370872394;
+int64 nChainStartTime = 1371119462;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 nBestChainWork = 0;
@@ -2676,7 +2676,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xbe;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xdb;
-        hashGenesisBlock = uint256("00000b65b3df6f18eb3424309ee4b1a7de0cdfc7f243ac95ab6b6618a401828b");
+        hashGenesisBlock = uint256("000002f020a7a5eed02b59fb87947fdd1cbb9416e1dbfa8a7c9604653b70b2b2");
     }
 
     //
@@ -2702,7 +2702,7 @@ bool InitBlockIndex() {
     // Only add the genesis block if not reindexing (in which case we reuse the one already on disk)
     if (!fReindex) {
         // Genesis block
-        const char* pszTimestamp = "TEST BLOCKCHAIN";
+        const char* pszTimestamp = "NY Times, 13 June 2013: World Bank Forecasts Slower but Smoother Growth";
         CTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
@@ -2716,17 +2716,17 @@ bool InitBlockIndex() {
         block.nVersion = 1;
         block.nTime    = nChainStartTime;
         block.nBits    = bnProofOfWorkLimit.GetCompact();
-        block.nNonce   = 2083236893;
+        block.nNonce   = 52884;
 
         if (fTestNet)
         {
-            block.nTime    = 1370872416;
-            block.nNonce   = 16531;
+            block.nTime    = 1371119998;
+            block.nNonce   = 24248;
         }
 
         //// debug print
         block.print();
-        assert(block.hashMerkleRoot == uint256("267aee4385dba4b823646024fc8c424a2ee8bd72d77a9f01c821adca5c7be970"));
+        assert(block.hashMerkleRoot == uint256("7666301d1e3a16b480a5f6f7b9d524073035c471cadb973cc91ab45d354ccdd0"));
 
         if (false && block.GetHash() != hashGenesisBlock)
         {
